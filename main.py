@@ -6,6 +6,8 @@ def value_error():
 text = input("Please enter csv filename with extension: ")
 dataset = analytics.load_file(text)
 cleaned_dataset = None
+filtered_data = None
+sorted_data= None
 if dataset is not None:
     print(f"Dataset {text} is loaded sucessfully\n")
 else:
@@ -19,20 +21,28 @@ while True:
         "2. Clean the Dataset\n" \
         "3. Generate Statistics\n" \
         "4. Column wise Statistics \n" \
-        "5. Sort Dataset\n" \
-        "6. Searching\n" \
-        "7. Value Counts\n" \
-        "8. Date Time Analysis\n" \
-        "9. Export File\n" \
-        "10. Exit\n"))
+        "5. Filter Students\n" \
+        "6. Sort Students\n" \
+        "7. Subject Wise Statistics\n" \
+        "8. Overall Statistics\n" \
+        "9. Group and Summarize\n" \
+        "10. Performers\n" \
+        "11. Export File\n" \
+        "12. Exit\n"))
 
         if user == 1:
             print("Dataset Overview\n")
             if dataset is not None:
-                row,col,datatype = analytics.dataset_overview(dataset)
-                print(f"Rows: {row}\nColumns: {col}\nData Type: {datatype}\n")
-                duplicates = dataset.duplicated().sum()
-                print(f"Total Duplicates: {duplicates}\n")
+                if cleaned_dataset is not None:
+                    row,col,datatype = analytics.dataset_overview(cleaned_dataset)
+                    print(f"Rows: {row}\nColumns: {col}\nData Type: {datatype}\n")
+                    duplicates = cleaned_dataset.duplicated().sum()
+                    print(f"Total Duplicates: {duplicates}\n")
+                else:
+                    row,col,datatype = analytics.dataset_overview(dataset)
+                    print(f"Rows: {row}\nColumns: {col}\nData Type: {datatype}\n")
+                    duplicates = dataset.duplicated().sum()
+                    print(f"Total Duplicates: {duplicates}\n")
             else:
                 print("No dataset loaded yet\n")
         elif user == 2:
@@ -65,15 +75,23 @@ while True:
             else:
                 print("No dataset loaded yet\n")
         elif user == 4:
-            print("Filter Dataset\n")
+            print("Column wise Statistics\n")
             if dataset is not None:
-                column = input("Please enter the column name to filter\n")
-                value = input("Please enter the value to filter\n")
-                filtered_data = analytics.filter_dataset(dataset, column, value)
-                print(filtered_data)
+                column = input("Please enter the column name to get statistics\n")
+                stats = analytics.column_wise_stats(dataset, column)
+                print(stats)
             else:
                 print("No dataset loaded yet\n")
         elif user == 5:
+            print("Filter Students\n")
+            if dataset is not None:
+                column = input("Please enter the column name to filter\n")
+                value = input("Please enter the value to filter\n")
+                filtered_data = analytics.filter(dataset, column, value)
+                print(filtered_data)
+            else:
+                print("No dataset loaded yet\n")
+        elif user == 6:
             print("Sort Dataset\n")
             try:
                 ask = int(input("Please choose: \n" \
@@ -84,7 +102,7 @@ while True:
                 continue
             if dataset is not None and ask in [1, 2]:
                 if ask == 1:
-                    sorted_data = analytics.sort_dataset(dataset, column=None, ascending=True, what="index")
+                    sorted_data = analytics.sort_dataset(dataset, columns=None, ascending=True, what="index")
                 else:
                     column = input("Please enter the column name to sort\n")
                     order = input("Please enter 'asc' for ascending or 'desc' for descending order\n")
@@ -93,54 +111,75 @@ while True:
                 print(sorted_data)
             else:
                 print("No dataset loaded yet\n")
-        elif user == 6:
-            print("Search Dataset\n")
-            if dataset is not None:
-                column = input("Please enter the column name to search\n")
-                value = input("Please enter the value to search\n")
-                searched_data = analytics.search_dataset(dataset, column, value)
-                print(searched_data)
         elif user == 7:
-            print("Value Counts\n")
+            print("Subject Wise Statistics\n")
             if dataset is not None:
-                column = input("Please enter the column name to get value counts\n")
-                try:
-                    counts = analytics.value_counts(dataset[column])
-                    print(counts)
-                except KeyError:
-                    print(f"Column '{column}' does not exist in the dataset.\n")
-            else:
-                print("No dataset loaded yet\n")
+                subject = input("Please enter the subject name to get statistics\n")
+                stats = analytics.subject_wise_stats(dataset, subject)
+                print(stats)
         elif user == 8:
-            print("Date Time Analysis\n")
+            print("Overall Statistics\n")
             if dataset is not None:
-                column = input("Please enter the column name for datetime analysis\n")
-                datetime_data = analytics.datetime_analysis(dataset, column)
-                if not datetime_data.empty:
-                    print(datetime_data)
+                if cleaned_dataset is not None:
+                    overall_stats = analytics.overall(cleaned_dataset)
+                else:
+                    overall_stats = analytics.overall(dataset)
+                print(overall_stats)
             else:
                 print("No dataset loaded yet\n")
         elif user == 9:
+            print("Group and Summarize\n")
+            if dataset is not None:
+                if cleaned_dataset is not None:
+                    col1 = input("Please enter the first column name to group by\n")
+                    col2 = input("Please enter the second column name to summarize\n")
+                    grouped_data = analytics.group_and_summarize(cleaned_dataset, col1, col2)
+                    print(grouped_data)
+                else:
+                    col1 = input("Please enter the first column name to group by\n")
+                    col2 = input("Please enter the second column name to summarize\n")
+                    grouped_data = analytics.group_and_summarize(dataset, col1, col2)
+                    print(grouped_data)
+            else:
+                print("No dataset loaded yet\n")
+        elif user == 10:
+            print("Performers\n")
+            if dataset is not None:
+                subject = input("Please enter the subject name to analyze performers\n")
+                try:
+                    threshold = float(input("Please enter the threshold marks to categorize performers\n"))
+                except ValueError:
+                    value_error()
+                    continue
+                if cleaned_dataset is not None:
+                    performance = analytics.performers(cleaned_dataset,subject, threshold)
+                    if performance is not None:
+                        highest,lowest,above_avg,below_avg = performance
+                        print(f"Highest Marks: {highest}\nLowest Marks: {lowest}\nAbove Average: {above_avg}\nBelow Average: {below_avg}\n")
+                else:
+                    performance = analytics.performers(dataset,subject, threshold)
+                    if performance is not None:
+                        highest,lowest,above_avg,below_avg = performance
+                        print(f"Highest Marks: {highest}\nLowest Marks: {lowest}\nAbove Average: {above_avg}\nBelow Average: {below_avg}\n")
+            else:
+                print("No dataset loaded yet\n")
+        elif user == 11:
             print("Export File\n")
             if dataset is not None:
                 try:
                     user2 = int(input("Please choose: \n" \
                     "1. Export Filtered Dataset\n" \
                     "2. Export Sorted Dataset\n" \
-                    "3. Export Searched Dataset\n" \
-                    "4. Export Original Dataset\n"))
+                    "3. Cleaned Dataset\n"))
                     if user2 == 1 and filtered_data is not None:
                         filename = input("Please enter the filename to export (with .csv extension)\n")
                         analytics.export_file(filtered_data, filename)
                     elif user2 == 2 and sorted_data is not None:
                         filename = input("Please enter the filename to export (with .csv extension)\n")
                         analytics.export_file(sorted_data, filename)
-                    elif user2 == 3 and searched_data is not None:
+                    elif user2 == 3 and cleaned_dataset is not None:
                         filename = input("Please enter the filename to export (with .csv extension)\n")
-                        analytics.export_file(searched_data, filename)
-                    elif user2 == 4 and dataset is not None:
-                        filename = input("Please enter the filename to export (with .csv extension)\n")
-                        analytics.export_file(dataset, filename)
+                        analytics.export_file(cleaned_dataset, filename)
                     else:
                         print("Please choose a valid option and ensure the corresponding dataset is loaded.\n")
                 except ValueError:
@@ -148,7 +187,7 @@ while True:
                     continue
             else:
                 print("No dataset loaded yet\n")
-        elif user == 10:
+        elif user == 12:
             print("Thanks,Rooting to see you again\n")
             break
         else:
