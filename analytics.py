@@ -33,7 +33,7 @@ def column_wise_stats(dataset,column):
 def sort_dataset(dataset,columns,ascending=True,what="values"):
     if what == "values":
         return dataset.sort_values(by=columns,ascending=ascending)
-    elif what == "index":
+    elif what == "index": 
         return dataset.sort_index(ascending=ascending)
 
 def filter(dataset,column,value):

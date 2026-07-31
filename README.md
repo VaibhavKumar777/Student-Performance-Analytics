@@ -84,13 +84,13 @@ Student Performance Analytics/
 Clone the repository.
 
 ```bash
-git clone https://github.com/VaibhavKumar777/Student-Performance-Analytics
+git clone https://github.com/VaibhavKumar777/Pandas-Student-Performance-Analytics
 ```
 
 Navigate to the project folder.
 
 ```bash
-cd Student-Performance-Analytics
+cd Pandas-Student-Performance-Analytics
 ```
 
 Install Pandas.
